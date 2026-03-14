@@ -26,15 +26,15 @@ class FinanceiroSnapshotSeeder extends Seeder
         $receitas = $snapshot['receitas'] ?? [];
         $despesas = $snapshot['despesas'] ?? [];
         $hasPagoCartaoCredito = Schema::hasColumn('despesas', 'pago_cartao_credito');
+        $hasFormaPagamento = Schema::hasColumn('despesas', 'forma_pagamento');
 
-        DB::transaction(function () use ($categorias, $receitas, $despesas, $hasPagoCartaoCredito) {
-            Schema::disableForeignKeyConstraints();
+        Schema::disableForeignKeyConstraints();
+        DB::table('despesas')->truncate();
+        DB::table('receitas')->truncate();
+        DB::table('categorias_despesa')->truncate();
+        Schema::enableForeignKeyConstraints();
 
-            DB::table('despesas')->truncate();
-            DB::table('receitas')->truncate();
-            DB::table('categorias_despesa')->truncate();
-
-            Schema::enableForeignKeyConstraints();
+        DB::transaction(function () use ($categorias, $receitas, $despesas, $hasPagoCartaoCredito, $hasFormaPagamento) {
 
             if (! empty($categorias)) {
                 DB::table('categorias_despesa')->insert(array_map(function (array $categoria) {
@@ -61,7 +61,7 @@ class FinanceiroSnapshotSeeder extends Seeder
             }
 
             if (! empty($despesas)) {
-                DB::table('despesas')->insert(array_map(function (array $despesa) use ($hasPagoCartaoCredito) {
+                DB::table('despesas')->insert(array_map(function (array $despesa) use ($hasPagoCartaoCredito, $hasFormaPagamento) {
                     $registro = [
                         'descricao' => $despesa['descricao'],
                         'categoria_despesa_id' => $despesa['categoria_despesa_id'],
@@ -78,6 +78,10 @@ class FinanceiroSnapshotSeeder extends Seeder
 
                     if ($hasPagoCartaoCredito) {
                         $registro['pago_cartao_credito'] = $despesa['pago_cartao_credito'] ?? false;
+                    }
+
+                    if ($hasFormaPagamento) {
+                        $registro['forma_pagamento'] = $despesa['forma_pagamento'] ?? null;
                     }
 
                     return $registro;
