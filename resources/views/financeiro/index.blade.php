@@ -4,7 +4,33 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>eFinanceiro</title>
+
+    <!-- SEO básico -->
+    <title>PlanejaLar – Controle Financeiro Familiar</title>
+    <meta name="description" content="Organize as finanças da sua família com facilidade. Cadastre receitas, despesas, acompanhe seu saldo e tenha o controle na palma da mão.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ url('/') }}">
+
+    <!-- Open Graph (WhatsApp, Facebook, LinkedIn…) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url('/') }}">
+    <meta property="og:site_name" content="eFinanceiro">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:title" content="eFinanceiro – Controle Financeiro Familiar">
+    <meta property="og:description" content="Organize as finanças da sua família com facilidade. Cadastre receitas, despesas, acompanhe seu saldo e tenha o controle na palma da mão.">
+    <meta property="og:image" content="{{ url('/og-image.png') }}">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="eFinanceiro – controle financeiro familiar">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="eFinanceiro – Controle Financeiro Familiar">
+    <meta name="twitter:description" content="Organize as finanças da sua família com facilidade. Cadastre receitas, despesas, acompanhe seu saldo e tenha o controle na palma da mão.">
+    <meta name="twitter:image" content="{{ url('/og-image.png') }}">
+    <meta name="twitter:image:alt" content="eFinanceiro – controle financeiro familiar">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&family=Material+Icons+Round" rel="stylesheet">
@@ -13,15 +39,15 @@
     @endif
     <style>
         :root {
-            --bg-1: #f3f8ff;
-            --bg-2: #effff7;
+            --bg-1: #fff7f2;
+            --bg-2: #f0f6ff;
             --ink: #111827;
             --muted: #6b7280;
             --card: rgba(255, 255, 255, 0.9);
             --stroke: rgba(15, 23, 42, 0.09);
-            --brand: #0f766e;
-            --brand-dark: #0b5f59;
-            --income: #047857;
+            --brand: #e86820;
+            --brand-dark: #c05010;
+            --income: #208070;
             --expense: #b91c1c;
             --shadow: 0 14px 36px rgba(15, 23, 42, 0.1);
             --radius: 22px;
@@ -36,8 +62,8 @@
             font-family: 'Manrope', sans-serif;
             color: var(--ink);
             background:
-                radial-gradient(circle at 8% 8%, #d7fef4 0 24%, transparent 42%),
-                radial-gradient(circle at 94% 20%, #dde8ff 0 22%, transparent 44%),
+                radial-gradient(circle at 8% 8%, #fde5cc 0 24%, transparent 42%),
+                radial-gradient(circle at 94% 20%, #d6e8f8 0 22%, transparent 44%),
                 linear-gradient(140deg, var(--bg-1), var(--bg-2));
             min-height: 100vh;
             padding: 18px 14px 34px;
@@ -50,7 +76,7 @@
         }
 
         .header {
-            background: linear-gradient(140deg, #00412d, #1f2937);
+            background: linear-gradient(140deg, #306080, #1e4a66);
             color: #fff;
             border-radius: var(--radius);
             padding: 18px;
@@ -67,7 +93,22 @@
             right: -40px;
             top: -70px;
             border-radius: 999px;
-            background: radial-gradient(circle, rgba(45, 212, 191, 0.5), transparent 70%);
+            background: radial-gradient(circle, rgba(232, 104, 32, 0.45), transparent 70%);
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .header-top img.app-logo {
+            flex-shrink: 0;
+            width: 62px;
+            height: 62px;
+            border-radius: 16px;
+            object-fit: cover;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
         .header h1 {
@@ -175,7 +216,7 @@
         .month-input:focus,
         input:focus,
         select:focus {
-            outline: 2px solid rgba(15, 118, 110, 0.22);
+            outline: 2px solid rgba(232, 104, 32, 0.22);
             border-color: var(--brand);
         }
 
@@ -201,20 +242,20 @@
         .primary-btn {
             border: none;
             color: #fff;
-            background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+            background: linear-gradient(135deg, #1a9e6e, #14784f);
         }
 
         .secondary-btn {
-            border: 1px solid #cbd5e1;
-            color: white;
-            background: #bd2e2e;
+            border: none;
+            color: #fff;
+            background: linear-gradient(135deg, #e86820, #c05010);
         }
 
         .flash {
             margin-top: 12px;
-            border: 1px solid #99f6e4;
-            background: #ecfeff;
-            color: #0f766e;
+            border: 1px solid #fcd3a8;
+            background: #fff7f0;
+            color: #c05010;
             border-radius: 12px;
             padding: 10px 12px;
             font-size: 0.88rem;
@@ -564,8 +605,13 @@
 
     <div class="app" data-open-receita="{{ $openReceitaModal ? '1' : '0' }}" data-open-despesa="{{ $openDespesaModal ? '1' : '0' }}">
         <section class="header">
-            <h1>eFinanceiro</h1>
-            <p>Controle suas finanças na palma da mão.</p>
+            <div class="header-top">
+                <img src="/icone-app.png" alt="Logo PlanejaLar" class="app-logo">
+                <div>
+                    <h1>PlanejaLar</h1>
+                    <p>Controle suas finanças na palma da mão.</p>
+                </div>
+            </div>
             <div class="stats">
                 <div class="stat">
                     <div class="label">Receitas</div>
@@ -634,7 +680,7 @@
                 </div>
             </article>
 
-            <div id="movimentacoesContainer">
+            <div id="movimentacoesContainer" class="card-wide">
                 @include('financeiro._movimentacoes')
             </div>
         </section>
