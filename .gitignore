@@ -22,3 +22,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+error_log
+public/.user.ini
+public/error_log
+public/php.ini
