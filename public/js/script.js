@@ -18,6 +18,7 @@
         const movimentacoesUrl = app.dataset.movimentacoesUrl || '/movimentacoes';
         const formEditReceita = document.getElementById('formEditReceita');
         const formEditDespesa = document.getElementById('formEditDespesa');
+        const formCreateDespesa = document.querySelector('#modalDespesa form');
         const formCategoriaDespesa = document.getElementById('formCategoriaDespesa');
         const formPagamentoDespesa = document.getElementById('formPagamentoDespesa');
         const btnRemoverPagamento = document.getElementById('btnRemoverPagamento');
@@ -35,8 +36,19 @@
         const categoriaCountBadge = document.getElementById('categoriaCountBadge');
         const categoriaDeleteUrlBase = app.dataset.categoriaDeleteUrl || '/categorias-despesa';
         const categoriasDespesaStateInicial = JSON.parse(app.dataset.categoriasDespesa || '[]');
+        const modalConfirmarExclusaoRecorrencia = document.getElementById('modalConfirmarExclusaoRecorrencia');
+        const textoConfirmacaoExclusaoRecorrencia = document.getElementById('textoConfirmacaoExclusaoRecorrencia');
+        const btnExcluirSomenteEstaDespesa = document.getElementById('btnExcluirSomenteEstaDespesa');
+        const btnExcluirEstaEDemais = document.getElementById('btnExcluirEstaEDemais');
+        const dEhCartaoCredito = document.getElementById('d_eh_cartao_credito');
+        const dCartaoCreditoWrap = document.getElementById('d_cartao_credito_wrap');
+        const dCartaoCreditoNome = document.getElementById('d_cartao_credito_nome');
+        const edEhCartaoCredito = document.getElementById('ed_eh_cartao_credito');
+        const edCartaoCreditoWrap = document.getElementById('ed_cartao_credito_wrap');
+        const edCartaoCreditoNome = document.getElementById('ed_cartao_credito_nome');
         let categoriasDespesaState = Array.isArray(categoriasDespesaStateInicial) ? categoriasDespesaStateInicial : [];
         let categoriaPendenteExclusao = null;
+        let formPendenteExclusaoRecorrencia = null;
         let valoresVisiveis = true;
         const valoresVisiveisStorageKey = 'planejalar.valoresVisiveis';
         let periodPicker;
@@ -204,6 +216,25 @@
                 const digits = this.value.replace(/\D/g, '');
                 this.value = digits ? (parseInt(digits, 10) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
             });
+        }
+
+        function atualizarCamposCartaoCredito(prefix) {
+            const isCreate = prefix === 'd';
+            const checkbox = isCreate ? dEhCartaoCredito : edEhCartaoCredito;
+            const wrap = isCreate ? dCartaoCreditoWrap : edCartaoCreditoWrap;
+            const select = isCreate ? dCartaoCreditoNome : edCartaoCreditoNome;
+
+            if (!checkbox || !wrap || !select) {
+                return;
+            }
+
+            const ativo = checkbox.checked;
+            wrap.style.display = ativo ? 'block' : 'none';
+            select.required = ativo;
+
+            if (!ativo) {
+                select.value = '';
+            }
         }
 
         function aplicarVisibilidadeReceitas() {
@@ -387,6 +418,50 @@
             }
         }
 
+        async function enviarExclusaoDespesa(form, excluirFuturas = false) {
+            const inputExcluirFuturas = document.createElement('input');
+            inputExcluirFuturas.type = 'hidden';
+            inputExcluirFuturas.name = '_excluir_futuras';
+            inputExcluirFuturas.value = excluirFuturas ? '1' : '0';
+            form.appendChild(inputExcluirFuturas);
+
+            try {
+                await enviarFormularioAjax(form);
+                await carregarMovimentacoes(inicioCampo.value, fimCampo.value);
+            } catch (error) {
+                form.submit();
+            }
+        }
+
+        function fecharModalExclusaoRecorrencia() {
+            formPendenteExclusaoRecorrencia = null;
+            modalConfirmarExclusaoRecorrencia?.classList.remove('open');
+        }
+
+        function abrirModalExclusaoRecorrencia(form) {
+            formPendenteExclusaoRecorrencia = form;
+            const temFuturas = form.dataset.hasFuturas === '1';
+
+            if (textoConfirmacaoExclusaoRecorrencia) {
+                const descricao = form.dataset.descricao || 'esta despesa';
+                textoConfirmacaoExclusaoRecorrencia.textContent = temFuturas
+                    ? `A despesa ${descricao} possui lancamentos recorrentes nos meses posteriores. Deseja excluir somente esta despesa ou tambem esta e as posteriores?`
+                    : `Deseja excluir a despesa ${descricao}?`;
+            }
+
+            if (btnExcluirSomenteEstaDespesa) {
+                btnExcluirSomenteEstaDespesa.innerHTML = temFuturas
+                    ? '<span class="material-icons-round">event</span>Somente esta despesa'
+                    : '<span class="material-icons-round">delete</span>Excluir despesa';
+            }
+
+            if (btnExcluirEstaEDemais) {
+                btnExcluirEstaEDemais.style.display = temFuturas ? 'inline-flex' : 'none';
+            }
+
+            modalConfirmarExclusaoRecorrencia?.classList.add('open');
+        }
+
         function bindMovimentacoesEvents() {
             function abrirModalPagamento(action, formaPagamento = '', permiteRemover = false) {
                 formPagamentoDespesa.action = action;
@@ -454,6 +529,8 @@
                         categoria_despesa_id: btn.dataset.categoria || '',
                         valor: String(btn.dataset.valor || '0'),
                         tipo: btn.dataset.tipo || '',
+                        eh_cartao_credito: btn.dataset.ehCartaoCredito === '1',
+                        cartao_credito_nome: btn.dataset.cartaoCreditoNome || '',
                         data_vencimento: btn.dataset.data || '',
                         periodicidade: btn.dataset.periodicidade || '',
                         recorrente: btn.dataset.recorrente === '1',
@@ -462,9 +539,12 @@
                     document.getElementById('ed_categoria_despesa_id').value = btn.dataset.categoria || '';
                     formatMoneyInput(document.getElementById('ed_valor'), btn.dataset.valor);
                     document.getElementById('ed_tipo').value = btn.dataset.tipo;
+                    edEhCartaoCredito.checked = btn.dataset.ehCartaoCredito === '1';
+                    edCartaoCreditoNome.value = btn.dataset.cartaoCreditoNome || '';
                     document.getElementById('ed_data_vencimento').value = btn.dataset.data;
                     document.getElementById('ed_periodicidade').value = btn.dataset.periodicidade || '';
                     document.getElementById('ed_recorrente').checked = btn.dataset.recorrente === '1';
+                    atualizarCamposCartaoCredito('ed');
                     document.getElementById('modalEditDespesa').classList.add('open');
                 });
             });
@@ -483,7 +563,7 @@
                 });
             });
 
-            movimentacoesContainer.querySelectorAll('form[data-ajax-delete]').forEach((form) => {
+            movimentacoesContainer.querySelectorAll('form[data-ajax-delete-receita]').forEach((form) => {
                 form.addEventListener('submit', async (event) => {
                     event.preventDefault();
 
@@ -491,12 +571,14 @@
                         return;
                     }
 
-                    try {
-                        await enviarFormularioAjax(form);
-                        await carregarMovimentacoes(inicioCampo.value, fimCampo.value);
-                    } catch (error) {
-                        form.submit();
-                    }
+                    await enviarExclusaoDespesa(form, false);
+                });
+            });
+
+            movimentacoesContainer.querySelectorAll('form[data-ajax-delete-despesa]').forEach((form) => {
+                form.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    abrirModalExclusaoRecorrencia(form);
                 });
             });
 
@@ -725,12 +807,16 @@
         formEditDespesa.addEventListener('submit', async (event) => {
             event.preventDefault();
 
+            atualizarCamposCartaoCredito('ed');
+
             const originalState = JSON.parse(formEditDespesa.dataset.originalState || '{}');
             const estadoAtual = {
                 descricao: document.getElementById('ed_descricao').value.trim(),
                 categoria_despesa_id: document.getElementById('ed_categoria_despesa_id').value,
                 valor: parseMoneyFieldValue(document.getElementById('ed_valor').value),
                 tipo: document.getElementById('ed_tipo').value,
+                eh_cartao_credito: edEhCartaoCredito.checked,
+                cartao_credito_nome: edCartaoCreditoNome.value || '',
                 data_vencimento: document.getElementById('ed_data_vencimento').value,
                 periodicidade: document.getElementById('ed_periodicidade').value || '',
                 recorrente: document.getElementById('ed_recorrente').checked,
@@ -741,6 +827,8 @@
                 categoria_despesa_id: String(originalState.categoria_despesa_id || ''),
                 valor: parseFloat(String(originalState.valor || '0')) || 0,
                 tipo: String(originalState.tipo || ''),
+                eh_cartao_credito: Boolean(originalState.eh_cartao_credito),
+                cartao_credito_nome: String(originalState.cartao_credito_nome || ''),
                 data_vencimento: String(originalState.data_vencimento || ''),
                 periodicidade: String(originalState.periodicidade || ''),
                 recorrente: Boolean(originalState.recorrente),
@@ -750,6 +838,8 @@
                 || estadoAtual.categoria_despesa_id !== estadoOriginal.categoria_despesa_id
                 || Math.abs(estadoAtual.valor - estadoOriginal.valor) > 0.001
                 || estadoAtual.tipo !== estadoOriginal.tipo
+                || estadoAtual.eh_cartao_credito !== estadoOriginal.eh_cartao_credito
+                || estadoAtual.cartao_credito_nome !== estadoOriginal.cartao_credito_nome
                 || estadoAtual.data_vencimento !== estadoOriginal.data_vencimento
                 || estadoAtual.periodicidade !== estadoOriginal.periodicidade
                 || estadoAtual.recorrente !== estadoOriginal.recorrente;
@@ -781,8 +871,46 @@
             await submitEditDespesa();
         });
 
+        document.getElementById('btnFecharConfirmacaoExclusao').addEventListener('click', () => {
+            fecharModalExclusaoRecorrencia();
+        });
+
+        document.getElementById('btnExcluirSomenteEstaDespesa').addEventListener('click', async () => {
+            const form = formPendenteExclusaoRecorrencia;
+
+            fecharModalExclusaoRecorrencia();
+
+            if (!form) {
+                return;
+            }
+
+            await enviarExclusaoDespesa(form, false);
+        });
+
+        document.getElementById('btnExcluirEstaEDemais').addEventListener('click', async () => {
+            const form = formPendenteExclusaoRecorrencia;
+
+            fecharModalExclusaoRecorrencia();
+
+            if (!form) {
+                return;
+            }
+
+            await enviarExclusaoDespesa(form, true);
+        });
+
         const shouldOpenReceitaModal = app?.dataset.openReceita === '1';
         const shouldOpenDespesaModal = app?.dataset.openDespesa === '1';
+
+        dEhCartaoCredito?.addEventListener('change', () => atualizarCamposCartaoCredito('d'));
+        edEhCartaoCredito?.addEventListener('change', () => atualizarCamposCartaoCredito('ed'));
+
+        formCreateDespesa?.addEventListener('submit', () => {
+            atualizarCamposCartaoCredito('d');
+        });
+
+        atualizarCamposCartaoCredito('d');
+        atualizarCamposCartaoCredito('ed');
 
         if (shouldOpenReceitaModal) {
             document.getElementById('modalReceita').classList.add('open');

@@ -189,15 +189,44 @@ class ReceitaController extends Controller
             ->latest()
             ->get();
 
+        $despesasFinanceiras = $despesas->where('eh_cartao_credito', false);
+
+        $recorrenciasUids = $despesas
+            ->where('recorrente', true)
+            ->pluck('recorrencia_uid')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $ultimasDatasPorRecorrencia = $recorrenciasUids->isEmpty()
+            ? collect()
+            : Despesa::query()
+                ->selectRaw('recorrencia_uid, MAX(data_vencimento) as ultima_data_vencimento')
+                ->whereIn('recorrencia_uid', $recorrenciasUids)
+                ->groupBy('recorrencia_uid')
+                ->pluck('ultima_data_vencimento', 'recorrencia_uid');
+
+        $despesas->each(function (Despesa $despesa) use ($ultimasDatasPorRecorrencia) {
+            $ultimaData = $ultimasDatasPorRecorrencia->get($despesa->recorrencia_uid);
+
+            $despesa->setAttribute(
+                'has_futuras_recorrencias',
+                $despesa->recorrente
+                    && ! empty($despesa->recorrencia_uid)
+                    && $ultimaData
+                    && Carbon::parse($ultimaData)->gt($despesa->data_vencimento)
+            );
+        });
+
         $totalReceitas = $receitas->sum('valor');
-        $totalDespesas = $despesas->sum('valor');
-        $despesasPorCategoria = $despesas
+        $totalDespesas = $despesasFinanceiras->sum('valor');
+        $despesasPorCategoria = $despesasFinanceiras
             ->groupBy(fn ($despesa) => $despesa->categoria?->nome ?: 'Sem categoria')
             ->map(fn ($itens) => (float) $itens->sum('valor'))
             ->sortDesc()
             ->all();
-        $quantidadeDespesas = $despesas->count();
-        $quantidadeDespesasPagas = $despesas->where('pago', true)->count();
+        $quantidadeDespesas = $despesasFinanceiras->count();
+        $quantidadeDespesasPagas = $despesasFinanceiras->where('pago', true)->count();
         $percentualDespesasPagas = $quantidadeDespesas > 0
             ? round(($quantidadeDespesasPagas / $quantidadeDespesas) * 100, 1)
             : 0;

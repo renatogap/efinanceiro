@@ -230,6 +230,18 @@
                     <input id="d_recorrente" name="recorrente" type="checkbox" value="1">
                     Esta despesa e recorrente
                 </label>
+                <label class="toggle" for="d_eh_cartao_credito">
+                    <input id="d_eh_cartao_credito" name="eh_cartao_credito" type="checkbox" value="1" @checked(old('eh_cartao_credito'))>
+                    Vincular a um Cartao de Credito
+                </label>
+                <div class="field" id="d_cartao_credito_wrap" style="display: none;">
+                    <label for="d_cartao_credito_nome">Qual cartao?</label>
+                    <select id="d_cartao_credito_nome" name="cartao_credito_nome">
+                        <option value="">Selecione</option>
+                        <option value="inter" @selected(old('cartao_credito_nome') === 'inter')>Inter</option>
+                        <option value="santander" @selected(old('cartao_credito_nome') === 'santander')>Santander</option>
+                    </select>
+                </div>
                 <button class="primary-btn" type="submit">
                     <span class="material-icons-round">save</span>
                     Salvar
@@ -336,6 +348,18 @@
                     <input id="ed_recorrente" name="recorrente" type="checkbox" value="1">
                     Esta despesa e recorrente
                 </label>
+                <label class="toggle" for="ed_eh_cartao_credito">
+                    <input id="ed_eh_cartao_credito" name="eh_cartao_credito" type="checkbox" value="1">
+                    Vincular a um Cartao de Credito
+                </label>
+                <div class="field" id="ed_cartao_credito_wrap" style="display: none;">
+                    <label for="ed_cartao_credito_nome">Qual cartao?</label>
+                    <select id="ed_cartao_credito_nome" name="cartao_credito_nome">
+                        <option value="">Selecione</option>
+                        <option value="inter">Inter</option>
+                        <option value="santander">Santander</option>
+                    </select>
+                </div>
                 <input type="hidden" id="ed_alterar_futuras" name="_alterar_futuras" value="0">
                 <button class="primary-btn" type="submit">
                     <span class="material-icons-round">save</span>
@@ -406,6 +430,30 @@
         </div>
     </div>
 
+    <div class="modal-backdrop" id="modalConfirmarExclusaoRecorrencia" style="z-index: 50; background: rgba(2, 6, 23, 0.35);">
+        <div class="modal" style="max-width: 380px;">
+            <div class="modal-head">
+                <h3>Excluir despesa recorrente</h3>
+                <button class="icon-btn" type="button" id="btnFecharConfirmacaoExclusao" aria-label="Cancelar">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <p id="textoConfirmacaoExclusaoRecorrencia" style="margin: 0 0 16px; font-size: 0.88rem; color: #475569; line-height: 1.5;">
+                Existem despesas recorrentes nos meses posteriores. Deseja excluir somente esta despesa ou tambem esta e as posteriores?
+            </p>
+            <div style="display: grid; gap: 8px;">
+                <button class="primary-btn" id="btnExcluirSomenteEstaDespesa" type="button">
+                    <span class="material-icons-round">event</span>
+                    Somente esta despesa
+                </button>
+                <button class="secondary-btn" id="btnExcluirEstaEDemais" type="button">
+                    <span class="material-icons-round">repeat</span>
+                    Esta e as posteriores
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-backdrop" id="modalCategoriaDespesa">
         <div class="modal" style="max-width: 380px;">
             <div class="modal-head">
@@ -445,7 +493,7 @@
             </div>
         </div>
     </div>
-    <script src="{{ asset('js/script.js') }}" defer></script>
+    <script src="{{ asset('js/script.js') }}?v={{ filemtime(public_path('js/script.js')) }}" defer></script>
 </body>
 
 </html>

@@ -453,6 +453,10 @@
             color: var(--expense);
         }
 
+        .expense.is-informative {
+            color: #111827;
+        }
+
         .item-actions {
             display: none;
             gap: 8px;

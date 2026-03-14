@@ -49,7 +49,7 @@
                                 >
                                     <span class="material-icons-round">edit</span>
                                 </button>
-                                <form action="{{ route('receitas.destroy', $receita) }}" method="POST" data-ajax-delete>
+                                <form action="{{ route('receitas.destroy', $receita) }}" method="POST" data-ajax-delete-receita>
                                     @csrf
                                     @method('DELETE')
                                     <button class="icon-btn danger" type="submit" aria-label="Excluir receita">
@@ -107,10 +107,12 @@
                                     @endphp
                                     <div class="item-meta">
                                         <small>
-                                            {{ $despesa->data_vencimento->format('d/m/Y') }} · {{ $despesa->categoria?->nome ?? 'Sem categoria' }} · {{ ucfirst($despesa->tipo) }}
-                                            @if ($despesa->recorrente && $despesa->periodicidade)
-                                                · {{ ucfirst($despesa->periodicidade) }}
+                                            {{ $despesa->data_vencimento->format('d/m/Y') }} · {{ $despesa->categoria?->nome ?? 'Sem categoria' }}
+                                            @if ($despesa->recorrente)
                                                 <span class="material-icons-round recurrence-icon" title="Despesa recorrente">autorenew</span>
+                                            @endif
+                                            @if ($despesa->eh_cartao_credito)
+                                                · Cartao {{ ucfirst($despesa->cartao_credito_nome ?? '') }}
                                             @endif
                                         </small>
                                         @if ($despesa->pago || $despesaVencida)
@@ -133,7 +135,7 @@
                                         @endif
                                     </div>
                                 </div>
-                                <div class="amount expense despesa-amount" data-visible-value="- R$ {{ number_format($despesa->valor, 2, ',', '.') }}">- R$ {{ number_format($despesa->valor, 2, ',', '.') }}</div>
+                                <div class="amount expense despesa-amount{{ $despesa->eh_cartao_credito ? ' is-informative' : '' }}" data-visible-value="- R$ {{ number_format($despesa->valor, 2, ',', '.') }}">- R$ {{ number_format($despesa->valor, 2, ',', '.') }}</div>
                             </div>
                             <div class="item-actions">
                                 @if (! $despesa->pago)
@@ -155,13 +157,22 @@
                                     data-categoria="{{ $despesa->categoria_despesa_id }}"
                                     data-valor="{{ number_format((float) $despesa->valor, 2, '.', '') }}"
                                     data-tipo="{{ $despesa->tipo }}"
+                                    data-eh-cartao-credito="{{ $despesa->eh_cartao_credito ? '1' : '0' }}"
+                                    data-cartao-credito-nome="{{ $despesa->cartao_credito_nome }}"
                                     data-recorrente="{{ $despesa->recorrente ? '1' : '0' }}"
                                     data-periodicidade="{{ $despesa->periodicidade }}"
                                     data-data="{{ $despesa->data_vencimento->format('Y-m-d') }}"
                                 >
                                     <span class="material-icons-round">edit</span>
                                 </button>
-                                <form action="{{ route('despesas.destroy', $despesa) }}" method="POST" data-ajax-delete>
+                                <form
+                                    action="{{ route('despesas.destroy', $despesa) }}"
+                                    method="POST"
+                                    data-ajax-delete-despesa
+                                    data-recorrente="{{ $despesa->recorrente ? '1' : '0' }}"
+                                    data-has-futuras="{{ ! empty($despesa->has_futuras_recorrencias) ? '1' : '0' }}"
+                                    data-descricao="{{ $despesa->descricao }}"
+                                >
                                     @csrf
                                     @method('DELETE')
                                     <button class="icon-btn danger" type="submit" aria-label="Excluir despesa">

@@ -27,6 +27,9 @@ class FinanceiroSnapshotSeeder extends Seeder
         $despesas = $snapshot['despesas'] ?? [];
         $hasPagoCartaoCredito = Schema::hasColumn('despesas', 'pago_cartao_credito');
         $hasFormaPagamento = Schema::hasColumn('despesas', 'forma_pagamento');
+        $hasEhCartaoCredito = Schema::hasColumn('despesas', 'eh_cartao_credito');
+        $hasCartaoCreditoNome = Schema::hasColumn('despesas', 'cartao_credito_nome');
+        $hasCartaoFaturaCategoriaId = Schema::hasColumn('despesas', 'cartao_fatura_categoria_id');
 
         Schema::disableForeignKeyConstraints();
         DB::table('despesas')->truncate();
@@ -34,7 +37,7 @@ class FinanceiroSnapshotSeeder extends Seeder
         DB::table('categorias_despesa')->truncate();
         Schema::enableForeignKeyConstraints();
 
-        DB::transaction(function () use ($categorias, $receitas, $despesas, $hasPagoCartaoCredito, $hasFormaPagamento) {
+        DB::transaction(function () use ($categorias, $receitas, $despesas, $hasPagoCartaoCredito, $hasFormaPagamento, $hasEhCartaoCredito, $hasCartaoCreditoNome, $hasCartaoFaturaCategoriaId) {
 
             if (! empty($categorias)) {
                 DB::table('categorias_despesa')->insert(array_map(function (array $categoria) {
@@ -61,7 +64,7 @@ class FinanceiroSnapshotSeeder extends Seeder
             }
 
             if (! empty($despesas)) {
-                DB::table('despesas')->insert(array_map(function (array $despesa) use ($hasPagoCartaoCredito, $hasFormaPagamento) {
+                DB::table('despesas')->insert(array_map(function (array $despesa) use ($hasPagoCartaoCredito, $hasFormaPagamento, $hasEhCartaoCredito, $hasCartaoCreditoNome, $hasCartaoFaturaCategoriaId) {
                     $registro = [
                         'descricao' => $despesa['descricao'],
                         'categoria_despesa_id' => $despesa['categoria_despesa_id'],
@@ -82,6 +85,18 @@ class FinanceiroSnapshotSeeder extends Seeder
 
                     if ($hasFormaPagamento) {
                         $registro['forma_pagamento'] = $despesa['forma_pagamento'] ?? null;
+                    }
+
+                    if ($hasEhCartaoCredito) {
+                        $registro['eh_cartao_credito'] = $despesa['eh_cartao_credito'] ?? false;
+                    }
+
+                    if ($hasCartaoCreditoNome) {
+                        $registro['cartao_credito_nome'] = $despesa['cartao_credito_nome'] ?? null;
+                    }
+
+                    if ($hasCartaoFaturaCategoriaId) {
+                        $registro['cartao_fatura_categoria_id'] = $despesa['cartao_fatura_categoria_id'] ?? null;
                     }
 
                     return $registro;

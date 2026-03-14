@@ -12,6 +12,9 @@ class Despesa extends Model
         'categoria_despesa_id',
         'valor',
         'tipo',
+        'eh_cartao_credito',
+        'cartao_credito_nome',
+        'cartao_fatura_categoria_id',
         'recorrente',
         'periodicidade',
         'recorrencia_uid',
@@ -23,6 +26,7 @@ class Despesa extends Model
 
     protected $casts = [
         'valor' => 'decimal:2',
+        'eh_cartao_credito' => 'boolean',
         'recorrente' => 'boolean',
         'data_vencimento' => 'date',
         'pago' => 'boolean',
