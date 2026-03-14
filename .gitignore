@@ -26,3 +26,4 @@ error_log
 public/.user.ini
 public/error_log
 public/php.ini
+public/.htaccess
