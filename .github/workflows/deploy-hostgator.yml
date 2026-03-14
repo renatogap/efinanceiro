@@ -1,0 +1,84 @@
+name: Deploy HostGator
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-hostgator-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install and build frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install PHP dependencies
+        run: composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.HOSTGATOR_SSH_KEY }}
+
+      - name: Deploy files with rsync
+        env:
+          HOST: ${{ secrets.HOSTGATOR_HOST }}
+          PORT: ${{ secrets.HOSTGATOR_PORT }}
+          USERNAME: ${{ secrets.HOSTGATOR_USER }}
+          DEPLOY_PATH: ${{ secrets.HOSTGATOR_DEPLOY_PATH }}
+        run: |
+          if [ -z "$PORT" ]; then PORT=22; fi
+          rsync -az --delete \
+            --exclude ".git/" \
+            --exclude ".github/" \
+            --exclude "node_modules/" \
+            --exclude "tests/" \
+            --exclude ".env" \
+            -e "ssh -p $PORT -o StrictHostKeyChecking=no" \
+            ./ "$USERNAME@$HOST:$DEPLOY_PATH"
+
+      - name: Run remote Laravel commands
+        env:
+          HOST: ${{ secrets.HOSTGATOR_HOST }}
+          PORT: ${{ secrets.HOSTGATOR_PORT }}
+          USERNAME: ${{ secrets.HOSTGATOR_USER }}
+          DEPLOY_PATH: ${{ secrets.HOSTGATOR_DEPLOY_PATH }}
+        run: |
+          if [ -z "$PORT" ]; then PORT=22; fi
+          ssh -p "$PORT" -o StrictHostKeyChecking=no "$USERNAME@$HOST" << EOF
+            set -e
+            cd "$DEPLOY_PATH"
+
+            if command -v composer >/dev/null 2>&1; then
+              composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+            fi
+
+            if command -v php >/dev/null 2>&1; then
+              php artisan migrate --force || true
+              php artisan optimize:clear || true
+              php artisan optimize || true
+            fi
+          EOF
