@@ -12,7 +12,19 @@
     <div id="tab-lista" class="tab-panel active">
         <div class="layout" style="margin-top: 0; gap: 12px;">
             <div>
-                <h3 style="margin: 0 0 10px; font-size: .92rem; color: #047857;">Receitas do periodo</h3>
+                <div class="section-title-row">
+                    <div class="section-title-main">
+                        <h3 style="color: #047857;">Receitas do periodo</h3>
+                    </div>
+                    <button
+                        class="icon-btn inline-add-btn income-add"
+                        type="button"
+                        data-open-inline-modal="modalReceita"
+                        aria-label="Cadastrar nova receita"
+                    >
+                        <span class="material-icons-round">add_circle</span>
+                    </button>
+                </div>
                 <div class="list">
                     @forelse ($receitas as $receita)
                         <article class="item" data-item>
@@ -21,7 +33,7 @@
                                     <strong>{{ $receita->descricao }}</strong>
                                     <small>{{ $receita->data_credito->format('d/m/Y') }} · {{ $receita->fonte ?: 'Sem fonte' }}</small>
                                 </div>
-                                <div class="amount income">+ R$ {{ number_format($receita->valor, 2, ',', '.') }}</div>
+                                <div class="amount income receita-amount" data-visible-value="+ R$ {{ number_format($receita->valor, 2, ',', '.') }}">+ R$ {{ number_format($receita->valor, 2, ',', '.') }}</div>
                             </div>
                             <div class="item-actions">
                                 <button
@@ -53,25 +65,75 @@
             </div>
 
             <div>
-                <h3 style="margin: 0 0 10px; font-size: .92rem; color: #b91c1c;">Despesas do periodo</h3>
+                <div class="section-title-row">
+                    <div class="section-title-main">
+                        <h3 style="color: #b91c1c;">Despesas do periodo</h3>
+                    </div>
+                    <button
+                        class="icon-btn inline-add-btn expense-add"
+                        type="button"
+                        data-open-inline-modal="modalDespesa"
+                        aria-label="Cadastrar nova despesa"
+                    >
+                        <span class="material-icons-round">add_circle</span>
+                    </button>
+                </div>
                 <div class="list">
-                    @forelse ($despesas as $despesa)
-                        <article class="item" data-item>
+                    @php
+                        $hoje = now()->startOfDay();
+                        $despesasOrdenadas = $despesas->sortBy(function ($despesa) use ($hoje) {
+                            $vencida = ! $despesa->pago && $despesa->data_vencimento->lt($hoje);
+                            return sprintf('%d|%s', $vencida ? 0 : 1, mb_strtolower($despesa->descricao ?? ''));
+                        }, SORT_NATURAL);
+                    @endphp
+                    @forelse ($despesasOrdenadas as $despesa)
+                        @php
+                            $despesaVencida = ! $despesa->pago && $despesa->data_vencimento->lt($hoje);
+                        @endphp
+                        <article class="item{{ $despesaVencida ? ' item-overdue' : '' }}" data-item>
                             <div class="item-top">
                                 <div>
                                     <strong>{{ $despesa->descricao }}</strong>
-                                    <small>
-                                        {{ $despesa->data_vencimento->format('d/m/Y') }} · {{ ucfirst($despesa->tipo) }}
-                                        @if ($despesa->recorrente && $despesa->periodicidade)
-                                            · {{ ucfirst($despesa->periodicidade) }}
-                                            <span class="material-icons-round recurrence-icon" title="Despesa recorrente">autorenew</span>
+                                    @php
+                                        $iconeFormaPagamento = match ($despesa->forma_pagamento) {
+                                            'cartao_credito' => ['icone' => 'credit_card', 'titulo' => 'Pago em cartao de credito', 'rotulo' => 'Cartao de Credito'],
+                                            'cartao_debito' => ['icone' => 'payments', 'titulo' => 'Pago em cartao de debito', 'rotulo' => 'Cartao de Debito'],
+                                            'pix' => ['icone' => 'qr_code_2', 'titulo' => 'Pago via Pix', 'rotulo' => 'Pix'],
+                                            'dinheiro' => ['icone' => 'attach_money', 'titulo' => 'Pago em dinheiro', 'rotulo' => 'Dinheiro'],
+                                            'boleto' => ['icone' => 'receipt_long', 'titulo' => 'Pago via boleto', 'rotulo' => 'Boleto'],
+                                            'transferencia' => ['icone' => 'swap_horiz', 'titulo' => 'Pago via transferencia', 'rotulo' => 'Transferencia'],
+                                            default => ['icone' => 'task_alt', 'titulo' => 'Pago', 'rotulo' => 'Pago'],
+                                        };
+                                    @endphp
+                                    <div class="item-meta">
+                                        <small>
+                                            {{ $despesa->data_vencimento->format('d/m/Y') }} · {{ $despesa->categoria?->nome ?? 'Sem categoria' }} · {{ ucfirst($despesa->tipo) }}
+                                            @if ($despesa->recorrente && $despesa->periodicidade)
+                                                · {{ ucfirst($despesa->periodicidade) }}
+                                                <span class="material-icons-round recurrence-icon" title="Despesa recorrente">autorenew</span>
+                                            @endif
+                                        </small>
+                                        @if ($despesa->pago || $despesaVencida)
+                                            <div class="item-status-badges">
+                                                @if ($despesa->pago)
+                                                    <button
+                                                        class="paid-badge"
+                                                        type="button"
+                                                        title="{{ $iconeFormaPagamento['titulo'] }}"
+                                                        data-edit-pagamento
+                                                        data-id="{{ $despesa->id }}"
+                                                        data-forma-pagamento="{{ $despesa->forma_pagamento }}"
+                                                        aria-label="Editar forma de pagamento"
+                                                    ><span class="material-icons-round">{{ $iconeFormaPagamento['icone'] }}</span>{{ $iconeFormaPagamento['rotulo'] }}</button>
+                                                @endif
+                                                @if ($despesaVencida)
+                                                    <span class="overdue-badge" title="Despesa vencida">Vencida</span>
+                                                @endif
+                                            </div>
                                         @endif
-                                        @if ($despesa->pago)
-                                            <span class="paid-badge"><span class="material-icons-round">task_alt</span>Pago</span>
-                                        @endif
-                                    </small>
+                                    </div>
                                 </div>
-                                <div class="amount expense">- R$ {{ number_format($despesa->valor, 2, ',', '.') }}</div>
+                                <div class="amount expense despesa-amount" data-visible-value="- R$ {{ number_format($despesa->valor, 2, ',', '.') }}">- R$ {{ number_format($despesa->valor, 2, ',', '.') }}</div>
                             </div>
                             <div class="item-actions">
                                 @if (! $despesa->pago)
@@ -90,6 +152,7 @@
                                     data-edit-despesa
                                     data-id="{{ $despesa->id }}"
                                     data-descricao="{{ $despesa->descricao }}"
+                                    data-categoria="{{ $despesa->categoria_despesa_id }}"
                                     data-valor="{{ number_format((float) $despesa->valor, 2, '.', '') }}"
                                     data-tipo="{{ $despesa->tipo }}"
                                     data-recorrente="{{ $despesa->recorrente ? '1' : '0' }}"
@@ -121,6 +184,7 @@
                 id="finance-month-chart"
                 data-receitas="{{ (float) $totalReceitas }}"
                 data-despesas="{{ (float) $totalDespesas }}"
+                data-despesas-por-categoria='@json($despesasPorCategoria)'
                 data-periodo="{{ $periodoLabel }}"
             ></canvas>
         </div>

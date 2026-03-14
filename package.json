@@ -15,6 +15,11 @@
         "vite": "^7.0.7"
     },
     "dependencies": {
-        "chart.js": "^4.5.1"
+        "@fontsource-variable/instrument-sans": "^5.2.8",
+        "@fontsource/manrope": "^5.2.8",
+        "@fontsource/sora": "^5.2.8",
+        "chart.js": "^4.5.1",
+        "flatpickr": "^4.6.13",
+        "material-design-icons-iconfont": "^6.7.0"
     }
 }

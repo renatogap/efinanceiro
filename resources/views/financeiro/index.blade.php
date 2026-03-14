@@ -14,616 +14,76 @@
     <!-- Open Graph (WhatsApp, Facebook, LinkedIn…) -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url('/') }}">
-    <meta property="og:site_name" content="eFinanceiro">
+    <meta property="og:site_name" content="PlanejaLar">
     <meta property="og:locale" content="pt_BR">
-    <meta property="og:title" content="eFinanceiro – Controle Financeiro Familiar">
+    <meta property="og:title" content="PlanejaLar – Controle Financeiro Familiar">
     <meta property="og:description" content="Organize as finanças da sua família com facilidade. Cadastre receitas, despesas, acompanhe seu saldo e tenha o controle na palma da mão.">
     <meta property="og:image" content="{{ url('/og-image.png') }}">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="eFinanceiro – controle financeiro familiar">
+    <meta property="og:image:alt" content="PlanejaLar – controle financeiro familiar">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="eFinanceiro – Controle Financeiro Familiar">
+    <meta name="twitter:title" content="PlanejaLar – Controle Financeiro Familiar">
     <meta name="twitter:description" content="Organize as finanças da sua família com facilidade. Cadastre receitas, despesas, acompanhe seu saldo e tenha o controle na palma da mão.">
     <meta name="twitter:image" content="{{ url('/og-image.png') }}">
-    <meta name="twitter:image:alt" content="eFinanceiro – controle financeiro familiar">
+    <meta name="twitter:image:alt" content="PlanejaLar – controle financeiro familiar">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&family=Material+Icons+Round" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
+
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
     @vite(['resources/js/app.js'])
     @endif
-    <style>
-        :root {
-            --bg-1: #fff7f2;
-            --bg-2: #f0f6ff;
-            --ink: #111827;
-            --muted: #6b7280;
-            --card: rgba(255, 255, 255, 0.9);
-            --stroke: rgba(15, 23, 42, 0.09);
-            --brand: #e86820;
-            --brand-dark: #c05010;
-            --income: #208070;
-            --expense: #b91c1c;
-            --shadow: 0 14px 36px rgba(15, 23, 42, 0.1);
-            --radius: 22px;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: 'Manrope', sans-serif;
-            color: var(--ink);
-            background:
-                radial-gradient(circle at 8% 8%, #fde5cc 0 24%, transparent 42%),
-                radial-gradient(circle at 94% 20%, #d6e8f8 0 22%, transparent 44%),
-                linear-gradient(140deg, var(--bg-1), var(--bg-2));
-            min-height: 100vh;
-            padding: 18px 14px 34px;
-        }
-
-        .app {
-            max-width: 980px;
-            margin: 0 auto;
-            animation: rise 420ms ease-out;
-        }
-
-        .header {
-            background: linear-gradient(140deg, #306080, #1e4a66);
-            color: #fff;
-            border-radius: var(--radius);
-            padding: 18px;
-            box-shadow: var(--shadow);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::after {
-            content: '';
-            position: absolute;
-            width: 180px;
-            height: 180px;
-            right: -40px;
-            top: -70px;
-            border-radius: 999px;
-            background: radial-gradient(circle, rgba(232, 104, 32, 0.45), transparent 70%);
-        }
-
-        .header-top {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .header-top img.app-logo {
-            flex-shrink: 0;
-            width: 62px;
-            height: 62px;
-            border-radius: 16px;
-            object-fit: cover;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .header h1 {
-            margin: 0;
-            font-family: 'Sora', sans-serif;
-            font-weight: 800;
-            font-size: 1.5rem;
-            letter-spacing: -0.03em;
-        }
-
-        .header p {
-            margin: 8px 0 0;
-            color: rgba(255, 255, 255, 0.82);
-            font-size: 0.93rem;
-        }
-
-        .stats {
-            margin-top: 14px;
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 10px;
-        }
-
-        .stat {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            padding: 10px;
-            backdrop-filter: blur(6px);
-        }
-
-        .stat .label {
-            font-size: 0.75rem;
-            opacity: 0.82;
-        }
-
-        .stat .value {
-            margin-top: 4px;
-            font-weight: 700;
-            font-size: 0.98rem;
-        }
-
-        .layout {
-            margin-top: 14px;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-
-        .card {
-            border: 1px solid var(--stroke);
-            border-radius: var(--radius);
-            background: var(--card);
-            backdrop-filter: blur(8px);
-            box-shadow: var(--shadow);
-            padding: 16px;
-        }
-
-        .card-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin: 0 0 12px;
-            font-family: 'Sora', sans-serif;
-            font-weight: 700;
-            font-size: 1.02rem;
-        }
-
-        .material-icons-round {
-            font-size: 1.2rem;
-        }
-
-        .filter-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .arrow-btn {
-            width: 42px;
-            height: 42px;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            background: #fff;
-            color: #0f172a;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .month-input {
-            flex: 1;
-            width: 100%;
-            border: 1px solid #d1d5db;
-            border-radius: 12px;
-            background: #fff;
-            font: inherit;
-            padding: 11px 12px;
-            color: #111827;
-            min-height: 42px;
-        }
-
-        .month-input:focus,
-        input:focus,
-        select:focus {
-            outline: 2px solid rgba(232, 104, 32, 0.22);
-            border-color: var(--brand);
-        }
-
-        .actions-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .primary-btn,
-        .secondary-btn {
-            border-radius: 14px;
-            padding: 12px 14px;
-            font: inherit;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-
-        .primary-btn {
-            border: none;
-            color: #fff;
-            background: linear-gradient(135deg, #1a9e6e, #14784f);
-        }
-
-        .secondary-btn {
-            border: none;
-            color: #fff;
-            background: linear-gradient(135deg, #e86820, #c05010);
-        }
-
-        .flash {
-            margin-top: 12px;
-            border: 1px solid #fcd3a8;
-            background: #fff7f0;
-            color: #c05010;
-            border-radius: 12px;
-            padding: 10px 12px;
-            font-size: 0.88rem;
-        }
-
-        .errors {
-            margin-top: 12px;
-            border: 1px solid #fecaca;
-            background: #fef2f2;
-            color: #b91c1c;
-            border-radius: 12px;
-            padding: 10px 12px;
-            font-size: 0.86rem;
-        }
-
-        .errors ul {
-            margin: 0;
-            padding-left: 18px;
-        }
-
-        .list {
-            display: grid;
-            gap: 10px;
-        }
-
-        .tabs {
-            display: inline-flex;
-            gap: 8px;
-            margin-bottom: 12px;
-            background: #f1f5f9;
-            padding: 4px;
-            border-radius: 12px;
-        }
-
-        .tab-btn {
-            border: none;
-            border-radius: 10px;
-            padding: 8px 12px;
-            font: inherit;
-            font-weight: 700;
-            background: transparent;
-            color: #475569;
-            cursor: pointer;
-        }
-
-        .tab-btn.active {
-            background: #fff;
-            color: #0f172a;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
-        }
-
-        .tab-panel {
-            display: none;
-        }
-
-        .tab-panel.active {
-            display: block;
-        }
-
-        .chart-wrap {
-            height: 280px;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            background: #fff;
-            padding: 14px;
-        }
-
-        .chart-summary {
-            margin-top: 10px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .chart-pill {
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            background: #fff;
-            padding: 8px 10px;
-            font-size: 0.86rem;
-            font-weight: 700;
-        }
-
-        .chart-pill.income {
-            color: #15803d;
-            border-color: #bbf7d0;
-        }
-
-        .chart-pill.expense {
-            color: #b91c1c;
-            border-color: #fecaca;
-        }
-
-        .item {
-            border: 1px solid #e5e7eb;
-            border-radius: 14px;
-            background: #fff;
-            padding: 10px;
-            display: grid;
-            gap: 9px;
-            cursor: pointer;
-            transition: border-color 0.2s ease;
-        }
-
-        .item:hover {
-            border-color: #94a3b8;
-        }
-
-        .item-top {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .item strong {
-            font-size: 0.93rem;
-        }
-
-        .item small {
-            display: block;
-            color: var(--muted);
-            margin-top: 2px;
-            font-size: 0.76rem;
-        }
-
-        .amount {
-            font-weight: 800;
-            font-family: 'Sora', sans-serif;
-            font-size: 0.9rem;
-        }
-
-        .income {
-            color: var(--income);
-        }
-
-        .expense {
-            color: var(--expense);
-        }
-
-        .item-actions {
-            display: none;
-            gap: 8px;
-            justify-content: flex-end;
-        }
-
-        .item.open .item-actions {
-            display: flex;
-        }
-
-        .icon-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 11px;
-            border: 1px solid #d1d5db;
-            background: #fff;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: #0f172a;
-            padding: 0;
-        }
-
-        .icon-btn.danger {
-            color: #b91c1c;
-            border-color: #fecaca;
-            background: #fff5f5;
-        }
-
-        .icon-btn.success {
-            color: #166534;
-            border-color: #bbf7d0;
-            background: #f0fdf4;
-        }
-
-        .paid-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            margin-left: 6px;
-            padding: 2px 8px;
-            border-radius: 999px;
-            background: #dcfce7;
-            color: #166534;
-            border: 1px solid #bbf7d0;
-            font-size: 0.7rem;
-            font-weight: 700;
-            vertical-align: middle;
-        }
-
-        .paid-badge .material-icons-round {
-            font-size: 0.9rem;
-        }
-
-        .recurrence-icon {
-            font-size: 0.95rem;
-            color: #0f766e;
-            vertical-align: middle;
-            margin-left: 4px;
-        }
-
-        .paid-percent-badge {
-            margin-left: auto;
-            display: inline-flex;
-            align-items: center;
-            padding: 3px 10px;
-            border-radius: 999px;
-            border: 1px solid #bbf7d0;
-            background: #f0fdf4;
-            color: #166534;
-            font-size: 0.74rem;
-            font-weight: 700;
-        }
-
-        .empty {
-            border: 1px dashed #d1d5db;
-            border-radius: 12px;
-            padding: 14px;
-            text-align: center;
-            color: var(--muted);
-            font-size: 0.88rem;
-        }
-
-        .modal-backdrop {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(2, 6, 23, 0.56);
-            padding: 18px 14px;
-            z-index: 40;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-backdrop.open {
-            display: flex;
-        }
-
-        .modal {
-            width: 100%;
-            max-width: 480px;
-            max-height: 92vh;
-            overflow: auto;
-            background: #fff;
-            border-radius: 18px;
-            border: 1px solid #e2e8f0;
-            box-shadow: var(--shadow);
-            padding: 16px;
-        }
-
-        .modal-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-
-        .modal-head h3 {
-            margin: 0;
-            font-family: 'Sora', sans-serif;
-            font-size: 1rem;
-        }
-
-        form {
-            display: grid;
-            gap: 10px;
-        }
-
-        .field {
-            display: grid;
-            gap: 6px;
-        }
-
-        label {
-            font-size: 0.83rem;
-            font-weight: 700;
-            color: #1f2937;
-        }
-
-        input,
-        select {
-            width: 100%;
-            border: 1px solid #d1d5db;
-            border-radius: 12px;
-            background: #fff;
-            font: inherit;
-            padding: 11px 12px;
-            color: #111827;
-        }
-
-        .row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .toggle {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.88rem;
-            color: #334155;
-        }
-
-        .toggle input {
-            width: 17px;
-            height: 17px;
-            accent-color: var(--brand);
-        }
-
-        @media (min-width: 920px) {
-            body {
-                padding: 26px;
-            }
-
-            .layout {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .card-wide {
-                grid-column: span 2;
-            }
-        }
-
-        @keyframes rise {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
 
 <body>
     @php
-    $periodoSelecionado = sprintf('%04d-%02d', $anoSelecionado, $mesSelecionado);
-    $periodoLabel = sprintf('%02d/%04d', $mesSelecionado, $anoSelecionado);
     $openReceitaModal = $errors->any() && old('_origin') === 'create_receita';
     $openDespesaModal = $errors->any() && old('_origin') === 'create_despesa';
+    $filtroMesReferencia = mb_strtoupper(\Carbon\Carbon::parse($fimSelecionado)->locale('pt_BR')->translatedFormat('F/Y'), 'UTF-8');
     @endphp
 
-    <div class="app" data-open-receita="{{ $openReceitaModal ? '1' : '0' }}" data-open-despesa="{{ $openDespesaModal ? '1' : '0' }}">
+    <div
+        class="app"
+        data-open-receita="{{ $openReceitaModal ? '1' : '0' }}"
+        data-open-despesa="{{ $openDespesaModal ? '1' : '0' }}"
+        data-movimentacoes-url="{{ route('financeiro.movimentacoes') }}"
+        data-categoria-delete-url="{{ url('/categorias-despesa') }}"
+        data-categorias-despesa='@json($categoriasDespesaPayload)'
+    >
         <section class="header">
             <div class="header-top">
-                <img src="/icone-app.png" alt="Logo PlanejaLar" class="app-logo">
-                <div>
-                    <h1>PlanejaLar</h1>
-                    <p>Controle suas finanças na palma da mão.</p>
+                <div class="header-brand">
+                    <img src="/icone-app.png" alt="Logo PlanejaLar" class="app-logo">
+                    <div>
+                        <h1>PlanejaLar</h1>
+                        <p>Controle suas finanças na palma da mão.</p>
+                    </div>
                 </div>
+                <button class="header-visibility-btn" id="toggleValoresGlobais" type="button" aria-label="Ocultar valores">
+                    <span class="material-icons-round">visibility</span>
+                </button>
             </div>
             <div class="stats">
                 <div class="stat">
                     <div class="label">Receitas</div>
-                    <div class="value" id="stat-receitas">R$ {{ number_format($totalReceitas, 2, ',', '.') }}</div>
+                    <div class="value" id="stat-receitas" data-visible-value="R$ {{ number_format($totalReceitas, 2, ',', '.') }}">R$ {{ number_format($totalReceitas, 2, ',', '.') }}</div>
                 </div>
                 <div class="stat">
                     <div class="label">Despesas</div>
-                    <div class="value" id="stat-despesas">R$ {{ number_format($totalDespesas, 2, ',', '.') }}</div>
+                    <div class="value" id="stat-despesas" data-visible-value="R$ {{ number_format($totalDespesas, 2, ',', '.') }}">R$ {{ number_format($totalDespesas, 2, ',', '.') }}</div>
                 </div>
                 <div class="stat">
                     <div class="label">Saldo</div>
-                    <div class="value" id="stat-saldo">R$ {{ number_format($saldo, 2, ',', '.') }}</div>
+                    <div class="value" id="stat-saldo" data-visible-value="R$ {{ number_format($saldo, 2, ',', '.') }}">R$ {{ number_format($saldo, 2, ',', '.') }}</div>
                 </div>
             </div>
         </section>
@@ -644,40 +104,26 @@
 
         <section class="layout">
             <article class="card card-wide">
-                <h2 class="card-title">
-                    <span class="material-icons-round">tune</span>
-                    Filtro por mes e ano
+                <h2 class="card-title filter-title-row">
+                    <span class="card-title-main">
+                        <span class="material-icons-round">tune</span>
+                        Filtro por periodo
+                    </span>
+                    <span id="filtroMesReferencia" class="badge-warning">{{ $filtroMesReferencia }}</span>
                 </h2>
                 <form id="formFiltro" method="GET" action="{{ route('financeiro.index') }}" style="display:block;">
-                    <input type="hidden" name="mes" id="mesCampo" value="{{ $mesSelecionado }}">
-                    <input type="hidden" name="ano" id="anoCampo" value="{{ $anoSelecionado }}">
+                    <input type="hidden" name="inicio" id="inicioCampo" value="{{ $inicioSelecionado }}">
+                    <input type="hidden" name="fim" id="fimCampo" value="{{ $fimSelecionado }}">
                     <div class="filter-row">
                         <button class="arrow-btn" type="button" id="prevMonth" aria-label="Mes anterior">
                             <span class="material-icons-round">chevron_left</span>
                         </button>
-                        <input class="month-input" type="month" id="periodoInput" value="{{ $periodoSelecionado }}">
+                        <input class="month-input" type="text" id="periodoInput" value="{{ $periodoLabel }}" readonly aria-label="Selecionar periodo">
                         <button class="arrow-btn" type="button" id="nextMonth" aria-label="Proximo mes">
                             <span class="material-icons-round">chevron_right</span>
                         </button>
                     </div>
                 </form>
-            </article>
-
-            <article class="card card-wide">
-                <h2 class="card-title">
-                    <span class="material-icons-round">add_circle</span>
-                    Cadastros
-                </h2>
-                <div class="actions-row">
-                    <button class="primary-btn" type="button" data-open-modal="modalReceita">
-                        <span class="material-icons-round">south_west</span>
-                        Cadastrar Receita
-                    </button>
-                    <button class="secondary-btn" type="button" data-open-modal="modalDespesa">
-                        <span class="material-icons-round">north_east</span>
-                        Cadastrar Despesa
-                    </button>
-                </div>
             </article>
 
             <div id="movimentacoesContainer" class="card-wide">
@@ -704,7 +150,7 @@
                 <div class="row">
                     <div class="field">
                         <label for="r_valor">Valor</label>
-                        <input id="r_valor" name="valor" type="number" step="0.01" min="0.01" value="{{ old('valor') }}" required>
+                        <input id="r_valor" name="valor" type="text" inputmode="decimal" placeholder="R$ 0,00" data-money value="{{ old('valor') }}" required>
                     </div>
                     <div class="field">
                         <label for="r_data_credito">Data do credito</label>
@@ -738,10 +184,24 @@
                     <label for="d_descricao">Descricao</label>
                     <input id="d_descricao" name="descricao" type="text" required>
                 </div>
+                <div class="field">
+                    <label for="d_categoria_despesa_id">Categoria</label>
+                    <div class="category-input-row">
+                        <select id="d_categoria_despesa_id" name="categoria_despesa_id" data-categoria-select required>
+                            <option value="">Selecione uma categoria</option>
+                            @foreach ($categoriasDespesa as $categoria)
+                            <option value="{{ $categoria->id }}" @selected(old('categoria_despesa_id') == $categoria->id)>{{ $categoria->nome }}</option>
+                            @endforeach
+                        </select>
+                        <button class="icon-btn inline-action" type="button" data-open-modal="modalCategoriaDespesa" aria-label="Cadastrar nova categoria de despesa">
+                            <span class="material-icons-round">add</span>
+                        </button>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="field">
                         <label for="d_valor">Valor</label>
-                        <input id="d_valor" name="valor" type="number" step="0.01" min="0.01" required>
+                        <input id="d_valor" name="valor" type="text" inputmode="decimal" placeholder="R$ 0,00" data-money required>
                     </div>
                     <div class="field">
                         <label for="d_tipo">Tipo</label>
@@ -753,7 +213,7 @@
                 </div>
                 <div class="row">
                     <div class="field">
-                        <label for="d_data_vencimento">Data da despesa</label>
+                        <label for="d_data_vencimento">Data do vencimento</label>
                         <input id="d_data_vencimento" name="data_vencimento" type="date" required>
                     </div>
                     <div class="field">
@@ -796,7 +256,7 @@
                 <div class="row">
                     <div class="field">
                         <label for="er_valor">Valor</label>
-                        <input id="er_valor" name="valor" type="number" step="0.01" min="0.01" required>
+                        <input id="er_valor" name="valor" type="text" inputmode="decimal" placeholder="R$ 0,00" data-money required>
                     </div>
                     <div class="field">
                         <label for="er_data_credito">Data do credito</label>
@@ -823,9 +283,6 @@
                     <span class="material-icons-round">close</span>
                 </button>
             </div>
-            <p style="margin: 0 0 10px; font-size: 0.78rem; color: #475569;">
-                Em despesas fixas mensais recorrentes, a alteracao de valor vale apenas para os proximos meses.
-            </p>
             <form id="formEditDespesa" method="POST">
                 @csrf
                 @method('PUT')
@@ -833,10 +290,24 @@
                     <label for="ed_descricao">Descricao</label>
                     <input id="ed_descricao" name="descricao" type="text" required>
                 </div>
+                <div class="field">
+                    <label for="ed_categoria_despesa_id">Categoria</label>
+                    <div class="category-input-row">
+                        <select id="ed_categoria_despesa_id" name="categoria_despesa_id" data-categoria-select required>
+                            <option value="">Selecione uma categoria</option>
+                            @foreach ($categoriasDespesa as $categoria)
+                            <option value="{{ $categoria->id }}">{{ $categoria->nome }}</option>
+                            @endforeach
+                        </select>
+                        <button class="icon-btn inline-action" type="button" data-open-modal="modalCategoriaDespesa" aria-label="Cadastrar nova categoria de despesa">
+                            <span class="material-icons-round">add</span>
+                        </button>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="field">
                         <label for="ed_valor">Valor</label>
-                        <input id="ed_valor" name="valor" type="number" step="0.01" min="0.01" required>
+                        <input id="ed_valor" name="valor" type="text" inputmode="decimal" placeholder="R$ 0,00" data-money required>
                     </div>
                     <div class="field">
                         <label for="ed_tipo">Tipo</label>
@@ -848,7 +319,7 @@
                 </div>
                 <div class="row">
                     <div class="field">
-                        <label for="ed_data_vencimento">Data da despesa</label>
+                        <label for="ed_data_vencimento">Data do vencimento</label>
                         <input id="ed_data_vencimento" name="data_vencimento" type="date" required>
                     </div>
                     <div class="field">
@@ -865,6 +336,7 @@
                     <input id="ed_recorrente" name="recorrente" type="checkbox" value="1">
                     Esta despesa e recorrente
                 </label>
+                <input type="hidden" id="ed_alterar_futuras" name="_alterar_futuras" value="0">
                 <button class="primary-btn" type="submit">
                     <span class="material-icons-round">save</span>
                     Atualizar
@@ -873,246 +345,107 @@
         </div>
     </div>
 
-    <script>
-        const formFiltro = document.getElementById('formFiltro');
-        const periodoInput = document.getElementById('periodoInput');
-        const mesCampo = document.getElementById('mesCampo');
-        const anoCampo = document.getElementById('anoCampo');
-        const movimentacoesContainer = document.getElementById('movimentacoesContainer');
-        const movimentacoesUrl = "{{ route('financeiro.movimentacoes') }}";
-        const formEditReceita = document.getElementById('formEditReceita');
-        const formEditDespesa = document.getElementById('formEditDespesa');
+    <div class="modal-backdrop" id="modalPagamentoDespesa">
+        <div class="modal" style="max-width: 380px;">
+            <div class="modal-head">
+                <h3>Registrar pagamento</h3>
+                <div style="display:flex; gap:8px;">
+                    <button class="icon-btn danger" id="btnRemoverPagamento" type="button" aria-label="Excluir pagamento" style="display:none;">
+                        <span class="material-icons-round">delete</span>
+                    </button>
+                    <button class="icon-btn" type="button" data-close-modal="modalPagamentoDespesa" aria-label="Fechar">
+                        <span class="material-icons-round">close</span>
+                    </button>
+                </div>
+            </div>
+            <form id="formPagamentoDespesa" method="POST">
+                @csrf
+                @method('PATCH')
+                <input type="hidden" name="_remover_pagamento" id="pd_remover_pagamento" value="0">
+                <div class="field">
+                    <label for="pd_forma_pagamento">Forma de pagamento</label>
+                    <select id="pd_forma_pagamento" name="forma_pagamento" required>
+                        <option value="">Selecione</option>
+                        <option value="cartao_credito">Cartao de Credito</option>
+                        <option value="cartao_debito">Cartao de Debito</option>
+                        <option value="pix">Pix</option>
+                        <option value="dinheiro">Dinheiro</option>
+                        <option value="boleto">Boleto</option>
+                        <option value="transferencia">Transferencia</option>
+                    </select>
+                </div>
+                <button class="primary-btn" type="submit">
+                    <span class="material-icons-round">task_alt</span>
+                    Confirmar pagamento
+                </button>
+            </form>
+        </div>
+    </div>
 
-        function formatCurrency(valor) {
-            return Number(valor || 0).toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-            });
-        }
+    <div class="modal-backdrop" id="modalConfirmarAlteracaoValor" style="z-index: 50; background: rgba(2, 6, 23, 0.35);">
+        <div class="modal" style="max-width: 380px;">
+            <div class="modal-head">
+                <h3>Aplicar alteracoes</h3>
+                <button class="icon-btn" type="button" id="btnFecharConfirmacaoValor" aria-label="Cancelar">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <p style="margin: 0 0 16px; font-size: 0.88rem; color: #475569; line-height: 1.5;">
+                Esta despesa e recorrente. Deseja aplicar as alteracoes somente neste lancamento ou tambem para todos os proximos meses?
+            </p>
+            <div style="display: grid; gap: 8px;">
+                <button class="primary-btn" id="btnAlterarSomenteEsta" type="button">
+                    <span class="material-icons-round">event</span>
+                    Somente este lancamento
+                </button>
+                <button class="secondary-btn" id="btnAlterarTodasFuturas" type="button">
+                    <span class="material-icons-round">repeat</span>
+                    Este e os proximos lancamentos
+                </button>
+            </div>
+        </div>
+    </div>
 
-        async function enviarFormularioAjax(form) {
-            const response = await fetch(form.action, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: new FormData(form),
-            });
-
-            if (!response.ok) {
-                throw new Error('Falha na requisicao');
-            }
-        }
-
-        function bindMovimentacoesEvents() {
-            movimentacoesContainer.querySelectorAll('.tab-btn').forEach((button) => {
-                button.addEventListener('click', () => {
-                    const targetId = button.dataset.tabTarget;
-
-                    movimentacoesContainer.querySelectorAll('.tab-btn').forEach((btn) => {
-                        btn.classList.toggle('active', btn === button);
-                    });
-
-                    movimentacoesContainer.querySelectorAll('.tab-panel').forEach((panel) => {
-                        panel.classList.toggle('active', panel.id === targetId);
-                    });
-                });
-            });
-
-            movimentacoesContainer.querySelectorAll('[data-item]').forEach((item) => {
-                item.addEventListener('click', (event) => {
-                    if (event.target.closest('button') || event.target.closest('form')) return;
-                    item.classList.toggle('open');
-                });
-            });
-
-            movimentacoesContainer.querySelectorAll('[data-edit-receita]').forEach((btn) => {
-                btn.addEventListener('click', () => {
-                    formEditReceita.action = `/receitas/${btn.dataset.id}`;
-                    document.getElementById('er_descricao').value = btn.dataset.descricao;
-                    document.getElementById('er_valor').value = btn.dataset.valor;
-                    document.getElementById('er_data_credito').value = btn.dataset.data;
-                    document.getElementById('er_fonte').value = btn.dataset.fonte || '';
-                    document.getElementById('modalEditReceita').classList.add('open');
-                });
-            });
-
-            movimentacoesContainer.querySelectorAll('[data-edit-despesa]').forEach((btn) => {
-                btn.addEventListener('click', () => {
-                    formEditDespesa.action = `/despesas/${btn.dataset.id}`;
-                    document.getElementById('ed_descricao').value = btn.dataset.descricao;
-                    document.getElementById('ed_valor').value = btn.dataset.valor;
-                    document.getElementById('ed_tipo').value = btn.dataset.tipo;
-                    document.getElementById('ed_data_vencimento').value = btn.dataset.data;
-                    document.getElementById('ed_periodicidade').value = btn.dataset.periodicidade || '';
-                    document.getElementById('ed_recorrente').checked = btn.dataset.recorrente === '1';
-                    document.getElementById('modalEditDespesa').classList.add('open');
-                });
-            });
-
-            movimentacoesContainer.querySelectorAll('form[data-ajax-pagar]').forEach((form) => {
-                form.addEventListener('submit', async (event) => {
-                    event.preventDefault();
-
-                    if (!confirm('Confirmar que esta despesa foi paga?')) {
-                        return;
-                    }
-
-                    try {
-                        await enviarFormularioAjax(form);
-
-                        await carregarMovimentacoes(mesCampo.value, anoCampo.value);
-                    } catch (error) {
-                        form.submit();
-                    }
-                });
-            });
-
-            movimentacoesContainer.querySelectorAll('form[data-ajax-delete]').forEach((form) => {
-                form.addEventListener('submit', async (event) => {
-                    event.preventDefault();
-
-                    if (!confirm('Excluir este registro?')) {
-                        return;
-                    }
-
-                    try {
-                        await enviarFormularioAjax(form);
-                        await carregarMovimentacoes(mesCampo.value, anoCampo.value);
-                    } catch (error) {
-                        form.submit();
-                    }
-                });
-            });
-        }
-
-        async function carregarMovimentacoes(mes, ano) {
-            try {
-                const query = new URLSearchParams({
-                    mes: String(mes),
-                    ano: String(ano),
-                });
-
-                const response = await fetch(`${movimentacoesUrl}?${query.toString()}`, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error('Falha ao carregar movimentacoes');
-                }
-
-                const data = await response.json();
-
-                movimentacoesContainer.innerHTML = data.html;
-                document.getElementById('stat-receitas').textContent = formatCurrency(data.totalReceitas);
-                document.getElementById('stat-despesas').textContent = formatCurrency(data.totalDespesas);
-                document.getElementById('stat-saldo').textContent = formatCurrency(data.saldo);
-
-                mesCampo.value = String(data.mes);
-                anoCampo.value = String(data.ano);
-                periodoInput.value = `${data.ano}-${String(data.mes).padStart(2, '0')}`;
-
-                history.replaceState(null, '', `/?mes=${data.mes}&ano=${data.ano}`);
-
-                bindMovimentacoesEvents();
-                if (window.initFinanceMonthChart) {
-                    window.initFinanceMonthChart(movimentacoesContainer);
-                }
-            } catch (error) {
-                formFiltro.submit();
-            }
-        }
-
-        function enviarComData(data) {
-            mesCampo.value = String(data.getMonth() + 1);
-            anoCampo.value = String(data.getFullYear());
-            carregarMovimentacoes(mesCampo.value, anoCampo.value);
-        }
-
-        periodoInput.addEventListener('change', function() {
-            if (!this.value) return;
-            const [ano, mes] = this.value.split('-');
-            anoCampo.value = String(Number(ano));
-            mesCampo.value = String(Number(mes));
-            carregarMovimentacoes(mesCampo.value, anoCampo.value);
-        });
-
-        document.getElementById('prevMonth').addEventListener('click', function() {
-            const data = new Date(periodoInput.value + '-01T12:00:00');
-            data.setMonth(data.getMonth() - 1);
-            periodoInput.value = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
-            enviarComData(data);
-        });
-
-        document.getElementById('nextMonth').addEventListener('click', function() {
-            const data = new Date(periodoInput.value + '-01T12:00:00');
-            data.setMonth(data.getMonth() + 1);
-            periodoInput.value = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
-            enviarComData(data);
-        });
-
-        document.querySelectorAll('[data-open-modal]').forEach((btn) => {
-            btn.addEventListener('click', () => {
-                document.getElementById(btn.dataset.openModal).classList.add('open');
-            });
-        });
-
-        document.querySelectorAll('[data-close-modal]').forEach((btn) => {
-            btn.addEventListener('click', () => {
-                document.getElementById(btn.dataset.closeModal).classList.remove('open');
-            });
-        });
-
-        document.querySelectorAll('.modal-backdrop').forEach((backdrop) => {
-            backdrop.addEventListener('click', (event) => {
-                if (event.target === backdrop) {
-                    backdrop.classList.remove('open');
-                }
-            });
-        });
-
-        bindMovimentacoesEvents();
-
-        formEditReceita.addEventListener('submit', async (event) => {
-            event.preventDefault();
-
-            try {
-                await enviarFormularioAjax(formEditReceita);
-                document.getElementById('modalEditReceita').classList.remove('open');
-                await carregarMovimentacoes(mesCampo.value, anoCampo.value);
-            } catch (error) {
-                formEditReceita.submit();
-            }
-        });
-
-        formEditDespesa.addEventListener('submit', async (event) => {
-            event.preventDefault();
-
-            try {
-                await enviarFormularioAjax(formEditDespesa);
-                document.getElementById('modalEditDespesa').classList.remove('open');
-                await carregarMovimentacoes(mesCampo.value, anoCampo.value);
-            } catch (error) {
-                formEditDespesa.submit();
-            }
-        });
-
-        const app = document.querySelector('.app');
-        const shouldOpenReceitaModal = app?.dataset.openReceita === '1';
-        const shouldOpenDespesaModal = app?.dataset.openDespesa === '1';
-
-        if (shouldOpenReceitaModal) {
-            document.getElementById('modalReceita').classList.add('open');
-        }
-
-        if (shouldOpenDespesaModal) {
-            document.getElementById('modalDespesa').classList.add('open');
-        }
-    </script>
+    <div class="modal-backdrop" id="modalCategoriaDespesa">
+        <div class="modal" style="max-width: 380px;">
+            <div class="modal-head">
+                <h3>Nova Categoria</h3>
+                <button class="icon-btn" type="button" data-close-modal="modalCategoriaDespesa" aria-label="Fechar">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <form id="formCategoriaDespesa" action="{{ route('categorias-despesa.store') }}" method="POST">
+                @csrf
+                <div class="field">
+                    <label for="cd_nome">Nome da categoria</label>
+                    <input id="cd_nome" name="nome" type="text" maxlength="60" placeholder="Ex.: Pet, Viagem, Impostos" required>
+                </div>
+                <button class="primary-btn" type="submit">
+                    <span class="material-icons-round">save</span>
+                    Salvar categoria
+                </button>
+            </form>
+            <div class="category-manager">
+                <div class="category-manager-head">
+                    <strong>Categorias cadastradas</strong>
+                    <span class="badge-warning" id="categoriaCountBadge">{{ count($categoriasDespesaPayload) }}</span>
+                </div>
+                <p class="category-help">Para excluir uma categoria em uso, escolha antes para qual categoria as despesas serao movidas.</p>
+                <div class="category-transfer" id="categoryTransferBox">
+                    <p id="categoryTransferText"></p>
+                    <select id="categoriaDestinoSelect">
+                        <option value="">Selecione a categoria de destino</option>
+                    </select>
+                    <div class="category-transfer-actions">
+                        <button class="secondary-btn" id="btnConfirmarExclusaoCategoria" type="button">Mover e excluir</button>
+                        <button class="icon-btn" id="btnCancelarExclusaoCategoria" type="button">Cancelar</button>
+                    </div>
+                </div>
+                <div class="category-list" id="categoryList"></div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ asset('js/script.js') }}" defer></script>
 </body>
 
 </html>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CategoriaDespesa;
 use App\Models\Despesa;
 use App\Models\Receita;
 use Carbon\Carbon;
@@ -14,13 +15,27 @@ class ReceitaController extends Controller
      */
     public function index(Request $request)
     {
-        [$mes, $ano] = $this->normalizarPeriodo($request);
-        $dados = $this->obterDadosPorPeriodo($mes, $ano);
+        [$inicio, $fim] = $this->normalizarPeriodo($request);
+        $dados = $this->obterDadosPorPeriodo($inicio, $fim);
+        $periodoLabel = $inicio->format('d/m/Y').' - '.$fim->format('d/m/Y');
 
         return view('financeiro.index', [
             ...$dados,
-            'mesSelecionado' => $mes,
-            'anoSelecionado' => $ano,
+            'categoriasDespesa' => CategoriaDespesa::query()->orderBy('nome')->get(),
+            'categoriasDespesaPayload' => CategoriaDespesa::query()
+                ->withCount('despesas')
+                ->orderBy('nome')
+                ->get()
+                ->map(fn (CategoriaDespesa $categoria) => [
+                    'id' => $categoria->id,
+                    'nome' => $categoria->nome,
+                    'despesas_count' => $categoria->despesas_count,
+                    'is_protected' => mb_strtolower(trim($categoria->nome), 'UTF-8') === 'financeiro',
+                ])
+                ->values(),
+            'inicioSelecionado' => $inicio->toDateString(),
+            'fimSelecionado' => $fim->toDateString(),
+            'periodoLabel' => $periodoLabel,
         ]);
     }
 
@@ -29,17 +44,17 @@ class ReceitaController extends Controller
      */
     public function movimentacoes(Request $request)
     {
-        [$mes, $ano] = $this->normalizarPeriodo($request);
-        $dados = $this->obterDadosPorPeriodo($mes, $ano);
-        $periodoLabel = sprintf('%02d/%04d', $mes, $ano);
+        [$inicio, $fim] = $this->normalizarPeriodo($request);
+        $dados = $this->obterDadosPorPeriodo($inicio, $fim);
+        $periodoLabel = $inicio->format('d/m/Y').' - '.$fim->format('d/m/Y');
 
         return response()->json([
             'html' => view('financeiro._movimentacoes', [
                 ...$dados,
                 'periodoLabel' => $periodoLabel,
             ])->render(),
-            'mes' => $mes,
-            'ano' => $ano,
+            'inicio' => $inicio->toDateString(),
+            'fim' => $fim->toDateString(),
             'totalReceitas' => (float) $dados['totalReceitas'],
             'totalDespesas' => (float) $dados['totalDespesas'],
             'saldo' => (float) $dados['saldo'],
@@ -128,40 +143,59 @@ class ReceitaController extends Controller
 
     private function normalizarPeriodo(Request $request): array
     {
-        $mes = (int) $request->input('mes', now()->month);
-        $ano = (int) $request->input('ano', now()->year);
+        $inicioInput = $request->input('inicio');
+        $fimInput = $request->input('fim');
+        $agora = now();
+        $defaultFim = Carbon::create($agora->year, $agora->month, 22);
+        $defaultInicio = $defaultFim->copy()->subMonthNoOverflow()->addDay();
 
-        if ($mes < 1 || $mes > 12) {
-            $mes = now()->month;
+        try {
+            $inicio = $inicioInput
+                ? Carbon::createFromFormat('Y-m-d', $inicioInput)
+                : $defaultInicio->copy();
+        } catch (\Throwable $e) {
+            $inicio = $defaultInicio->copy();
         }
 
-        if ($ano < 2000 || $ano > 2100) {
-            $ano = now()->year;
+        try {
+            $fim = $fimInput
+                ? Carbon::createFromFormat('Y-m-d', $fimInput)
+                : $defaultFim->copy();
+        } catch (\Throwable $e) {
+            $fim = $defaultFim->copy();
         }
 
-        return [$mes, $ano];
+        if ($inicio->gt($fim)) {
+            [$inicio, $fim] = [$fim, $inicio];
+        }
+
+        return [$inicio->startOfDay(), $fim->endOfDay()];
     }
 
-    private function obterDadosPorPeriodo(int $mes, int $ano): array
+    private function obterDadosPorPeriodo(Carbon $inicio, Carbon $fim): array
     {
-        $this->sincronizarRecorrenciasMensaisFixas($mes, $ano);
+        $this->sincronizarRecorrenciasMensaisFixas($fim->copy()->endOfMonth());
 
         $receitas = Receita::query()
-            ->whereYear('data_credito', $ano)
-            ->whereMonth('data_credito', $mes)
+            ->whereBetween('data_credito', [$inicio->toDateString(), $fim->toDateString()])
             ->latest('data_credito')
             ->latest()
             ->get();
 
         $despesas = Despesa::query()
-            ->whereYear('data_vencimento', $ano)
-            ->whereMonth('data_vencimento', $mes)
+            ->with('categoria')
+            ->whereBetween('data_vencimento', [$inicio->toDateString(), $fim->toDateString()])
             ->latest('data_vencimento')
             ->latest()
             ->get();
 
         $totalReceitas = $receitas->sum('valor');
         $totalDespesas = $despesas->sum('valor');
+        $despesasPorCategoria = $despesas
+            ->groupBy(fn ($despesa) => $despesa->categoria?->nome ?: 'Sem categoria')
+            ->map(fn ($itens) => (float) $itens->sum('valor'))
+            ->sortDesc()
+            ->all();
         $quantidadeDespesas = $despesas->count();
         $quantidadeDespesasPagas = $despesas->where('pago', true)->count();
         $percentualDespesasPagas = $quantidadeDespesas > 0
@@ -173,19 +207,16 @@ class ReceitaController extends Controller
             'despesas' => $despesas,
             'totalReceitas' => $totalReceitas,
             'totalDespesas' => $totalDespesas,
+            'despesasPorCategoria' => $despesasPorCategoria,
             'saldo' => $totalReceitas - $totalDespesas,
             'percentualDespesasPagas' => $percentualDespesasPagas,
         ];
     }
 
-    private function sincronizarRecorrenciasMensaisFixas(int $mes, int $ano): void
+    private function sincronizarRecorrenciasMensaisFixas(Carbon $limite): void
     {
-        $limite = Carbon::create($ano, $mes, 1)->endOfMonth();
-
         $series = Despesa::query()
-            ->where('tipo', 'fixa')
             ->where('recorrente', true)
-            ->where('periodicidade', 'mensal')
             ->whereNotNull('recorrencia_uid')
             ->distinct()
             ->pluck('recorrencia_uid');

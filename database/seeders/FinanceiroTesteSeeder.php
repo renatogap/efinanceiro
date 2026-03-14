@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\CategoriaDespesa;
 use App\Models\Despesa;
 use App\Models\Receita;
 use Carbon\Carbon;
@@ -14,6 +15,8 @@ class FinanceiroTesteSeeder extends Seeder
      */
     public function run(): void
     {
+        $categoriasIds = CategoriaDespesa::query()->pluck('id')->all();
+
         for ($m = 0; $m < 12; $m++) {
             $base = Carbon::now()->startOfMonth()->subMonths($m);
 
@@ -32,6 +35,7 @@ class FinanceiroTesteSeeder extends Seeder
 
                 Despesa::create([
                     'descricao' => 'Despesa Teste '.($m + 1).'-'.$j,
+                    'categoria_despesa_id' => $categoriasIds[array_rand($categoriasIds)],
                     'valor' => rand(200, 2400) + ($j * 19),
                     'tipo' => $tipo,
                     'recorrente' => $recorrente,
